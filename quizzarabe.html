@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apprendre l'Arabe — Application Complète</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Amiri:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a3e, #0a0a1a);
+            color: #f0f0ff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* GLOBAL ARABIC STYLE IMPROVEMENTS */
+        [lang="ar"],
+        .amiri,
+        .ar-big,
+        .ar-word,
+        .ar-char,
+        .dictee-reveal,
+        .tashkeel-display,
+        .alpha-card .ch,
+        .example-box,
+        .d-input-display,
+        .bd-char {
+            font-family: 'Amiri', serif;
+            direction: rtl;
+            line-height: 1.6;
+            text-rendering: optimizeLegibility;
+            font-feature-settings: "kern", "liga", "clig", "calt";
+            white-space: nowrap;
+            /* Empêche l'empilement vertical */
+            display: inline-block;
+            /* Garantit que le bloc respecte la direction et les connexions */
+            unicode-bidi: isolate;
+        }
+
+        .ar {
+            font-family: 'Amiri', 'Traditional Arabic', serif;
+        }
+
+        /* GAMIFICATION BAR */
+        .gami-bar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 750px;
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+        }
+
+        .gami-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .gami-item .emoji {
+            font-size: 20px;
+        }
+
+        .gami-item .val {
+            color: #a29bfe;
+            font-size: 16px;
+        }
+
+        .xp-mini-bar {
+            width: 80px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .xp-mini-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+            transition: width 0.4s;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            max-width: 750px;
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 8px;
+            font-size: 13px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.45);
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s;
+            min-width: 110px;
+            text-align: center;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* SECTIONS */
+        .section {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 28px;
+            border-radius: 16px;
+            max-width: 750px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section.visible {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* TYPOGRAPHY */
+        h2.sec-title {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sec-sub {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        /* PROGRESS */
+        .prog-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .prog-bar-bg {
+            flex: 1;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .prog-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00b894, #00cec9);
+            transition: width 0.5s;
+            border-radius: 5px;
+        }
+
+        .prog-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #00cec9;
+            white-space: nowrap;
+        }
+
+        /* SELECT */
+        select {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
+            color: #e8e8f0;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            margin-bottom: 14px;
+        }
+
+        select option {
+            background: #1a1a3e;
+            color: #e8e8f0;
+        }
+
+        /* ARABIC DISPLAY */
+        .ar-big {
+            font-size: clamp(60px, 15vw, 90px);
+            text-align: center;
+            color: #f0f0ff;
+            margin: 15px 0;
+            text-shadow: 0 0 30px rgba(108, 92, 231, 0.3);
+            display: block;
+            /* Conteneur parent en bloc pour centrage */
+            width: 100%;
+        }
+
+        .ar-word {
+            display: block;
+            /* Conteneur parent en bloc */
+            width: 100%;
+            font-size: clamp(40px, 10vw, 70px);
+            text-align: center;
+            color: #f0f0ff;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .highlight {
+            color: #ff7675;
+            font-weight: bold;
+        }
+
+        .example-box {
+            font-size: 40px;
+            font-family: 'Amiri', serif;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 14px;
+            border-radius: 10px;
+            text-align: center;
+            line-height: 1.4;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* INPUTS */
+        .inp-group {
+            margin: 12px 0;
+            text-align: left;
+        }
+
+        .inp-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .inp-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #e8e8f0;
+            outline: none;
+            transition: border 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .inp-group input:focus {
+            border-color: #6c5ce7;
+        }
+
+        /* BUTTONS */
+        .btns {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .btn {
+            border: none;
+            padding: 11px 20px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: #fff;
+            display: none;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-audio {
+            background: linear-gradient(135deg, #e17055, #fdcb6e);
+            color: #fff;
+            display: none;
+        }
+
+        .btn-audio:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-audio2 {
+            background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+            color: #fff;
+            display: none;
+        }
+
+        .btn-audio2:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: #fff;
+            font-size: 16px;
+            padding: 14px 28px;
+        }
+
+        /* FEEDBACK */
+        .feedback {
+            margin-top: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            min-height: 30px;
+            text-align: center;
+        }
+
+        .correct {
+            color: #00b894;
+        }
+
+        .incorrect {
+            color: #ff7675;
+        }
+
+        .tip {
+            display: none;
+            background: rgba(108, 92, 231, 0.1);
+            border-left: 4px solid #6c5ce7;
+            padding: 14px;
+            margin-top: 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* VICTORY */
+        .victory {
+            display: none;
+            text-align: center;
+            padding: 35px 0;
+        }
+
+        .victory h2 {
+            color: #00b894;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .victory p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+
+        /* BREAKDOWN */
+        .bd-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 20px;
+            direction: rtl;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 14px;
+            border-radius: 12px;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .bd-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border-bottom: 3px solid;
+            min-width: 65px;
+        }
+
+        .bd-char {
+            font-size: 36px;
+            margin-bottom: 4px;
+        }
+
+        .bd-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .bd-plus {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+            padding: 0 4px;
+        }
+
+        /* ALPHABET GRID */
+        .alpha-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+            direction: rtl;
+        }
+
+        .alpha-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 12px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .alpha-card:hover {
+            transform: translateY(-4px);
+            border-color: #6c5ce7;
+            background: rgba(108, 92, 231, 0.1);
+            box-shadow: 0 6px 16px rgba(108, 92, 231, 0.2);
+        }
+
+        .alpha-card .ch {
+            font-size: 42px;
+            font-family: 'Amiri', serif;
+            color: #f0f0ff;
+            margin-bottom: 4px;
+        }
+
+        .alpha-card .nm {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 700;
+        }
+
+        .alpha-card .forms {
+            font-size: 18px;
+            font-family: 'Amiri', serif;
+            color: rgba(255, 255, 255, 0.35);
+            margin-top: 4px;
+            letter-spacing: 6px;
+        }
+
+        .alpha-card.rebel {
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+
+        .alpha-card.rebel .rebel-tag {
+            display: inline-block;
+            font-size: 9px;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff7675;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        /* STATS */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card .st-val {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .st-lbl {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 600;
+        }
+
+        .weak-list {
+            margin-top: 14px;
+        }
+
+        .weak-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        .weak-item .ar {
+            font-size: 28px;
+            font-family: 'Amiri', serif;
+        }
+
+        .weak-item .wi-info {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* TASHKEEL */
+        .tashkeel-display {
+            font-size: clamp(60px, 15vw, 110px);
+            text-align: center;
+            color: #f0f0ff;
+            margin: 10px 0;
+            text-shadow: 0 0 30px rgba(108, 92, 231, 0.3);
+        }
+
+        .tashkeel-ref {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin: 14px 0;
+        }
+
+        .tashkeel-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .tashkeel-card .tc-ar {
+            font-size: 36px;
+            font-family: 'Amiri', serif;
+            color: #a29bfe;
+        }
+
+        .tashkeel-card .tc-nm {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 700;
+        }
+
+        .tashkeel-card .tc-snd {
+            font-size: 12px;
+            color: #00cec9;
+            font-weight: 600;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            z-index: 999;
+            transform: translateX(120%);
+            transition: transform 0.4s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-xp {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: #fff;
+        }
+
+        .toast-streak {
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            color: #fff;
+        }
+
+        .toast-level {
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: #fff;
+        }
+
+        @media(max-width:500px) {
+            .ar-big {
+                font-size: 65px;
+            }
+
+            .ar-word {
+                font-size: 50px;
+            }
+
+            .tashkeel-display {
+                font-size: 80px;
+            }
+
+            .tab {
+                font-size: 11px;
+                padding: 10px 5px;
+                min-width: 80px;
+            }
+        }
+
+        /* DICTEE */
+        .dictee-speaker {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 30px rgba(108, 92, 231, 0.4);
+            animation: pulse-speaker 2s ease infinite;
+        }
+
+        .dictee-speaker:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 40px rgba(108, 92, 231, 0.6);
+        }
+
+        @keyframes pulse-speaker {
+
+            0%,
+            100% {
+                box-shadow: 0 8px 30px rgba(108, 92, 231, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 8px 40px rgba(108, 92, 231, 0.7);
+            }
+        }
+
+        .dictee-hint {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .dictee-reveal {
+            text-align: center;
+            font-size: clamp(40px, 12vw, 60px);
+            color: #f0f0ff;
+            margin: 15px 0;
+            display: none;
+            width: 100%;
+        }
+
+        .d-input-display {
+            width: 100%;
+            min-height: 70px;
+            padding: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #f0f0ff;
+            font-size: clamp(24px, 6vw, 36px);
+            text-align: center;
+            margin-bottom: 12px;
+            cursor: text;
+            transition: border-color 0.3s;
+            display: block;
+            /* Changé de flex à block pour éviter l'alignement vertical des lettres */
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .d-input-display:focus-within {
+            border-color: #6c5ce7;
+        }
+
+        .vk-wrap {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+
+        .vk-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.35);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .vk-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+
+        .vk-key {
+            min-width: 38px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #f0f0ff;
+            font-family: 'Amiri', serif;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+        }
+
+        .vk-key:hover {
+            background: rgba(108, 92, 231, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .vk-key:active {
+            transform: scale(0.95);
+        }
+
+        .vk-key-tashkeel {
+            background: rgba(162, 155, 254, 0.15);
+            border: 1px solid rgba(162, 155, 254, 0.2);
+            font-size: 26px;
+            min-width: 46px;
+            height: 46px;
+        }
+
+        .vk-key-tashkeel:hover {
+            background: rgba(162, 155, 254, 0.35);
+        }
+
+        .vk-key-action {
+            background: rgba(108, 92, 231, 0.2);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            min-width: 60px;
+        }
+
+        .vk-key-action:hover {
+            background: rgba(108, 92, 231, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- GAMIFICATION BAR -->
+    <div class="gami-bar">
+        <div class="gami-item"><span class="emoji">🔥</span><span class="val" id="g-streak">0</span> <span>jours</span>
+        </div>
+        <div class="gami-item"><span class="emoji">⭐</span><span>Niv.</span><span class="val" id="g-level">1</span>
+        </div>
+        <div class="gami-item"><span class="emoji">💎</span><span class="val" id="g-xp">0</span><span>XP</span>
+            <div class="xp-mini-bar">
+                <div class="xp-mini-fill" id="g-xp-bar" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+    <!-- TABS -->
+    <div class="tabs" id="tabs-container"></div>
+    <!-- TOAST -->
+    <div class="toast toast-xp" id="toast"></div>
+    <!-- SECTION: QUIZ LETTRES -->
+    <div class="section visible" id="sec-letters">
+        <h2 class="sec-title">📝 Formes des Lettres</h2>
+        <p class="sec-sub">Identifie la lettre et sa position</p>
+        <select id="family-filter" onchange="resetLetterQuiz()"></select>
+        <div class="prog-wrap">
+            <div class="prog-bar-bg">
+                <div class="prog-bar-fill" id="l-prog"></div>
+            </div><span class="prog-text" id="l-prog-txt">0/0</span>
+        </div>
+        <div class="victory" id="l-victory">
+            <h2>🎉 Famille Terminée !</h2>
+            <p>Tu as maîtrisé toutes les formes.</p><button class="btn btn-restart"
+                onclick="resetLetterQuiz()">Relancer</button>
+        </div>
+        <div id="l-core">
+            <div class="ar-big" id="l-char">ـبـ</div>
+            <div class="example-box" id="l-word"></div>
+            <div class="inp-group"><label>Nom de la lettre :</label><input type="text" id="l-inp-name"
+                    placeholder="ex: sin, ayn..." autocomplete="off"></div>
+            <div class="inp-group"><label>Position (début, milieu, fin, isolée) :</label><input type="text"
+                    id="l-inp-pos" placeholder="Tape la position" autocomplete="off"></div>
+            <div class="btns">
+                <button class="btn btn-primary" id="l-submit" onclick="checkLetter()">Valider</button>
+                <button class="btn btn-audio" id="l-audio1" onclick="playAudio(curLetter.audioChar)">🔊 Lettre</button>
+                <button class="btn btn-audio2" id="l-audio2" onclick="playAudio(curLetter.audioWord)">🔊 Mot</button>
+                <button class="btn btn-success" id="l-next" onclick="nextLetter()">Suivant ➔</button>
+            </div>
+            <div id="l-fb" class="feedback"></div>
+            <div id="l-tip" class="tip"></div>
+        </div>
+    </div>
+    <!-- SECTION: MOTS -->
+    <div class="section" id="sec-words">
+        <h2 class="sec-title">📖 Lecture de Mots</h2>
+        <p class="sec-sub">Lis ce mot et écris sa phonétique</p>
+        <select id="word-diff" onchange="resetWordQuiz()">
+            <option value="all">Tous les mots</option>
+            <option value="short">Mots courts (2-3 lettres)</option>
+            <option value="medium">Mots moyens (4 lettres)</option>
+            <option value="long">Mots longs (5+ lettres)</option>
+        </select>
+        <div class="prog-wrap">
+            <div class="prog-bar-bg">
+                <div class="prog-bar-fill" id="w-prog"></div>
+            </div><span class="prog-text" id="w-prog-txt">0/0</span>
+        </div>
+        <div class="victory" id="w-victory">
+            <h2>🎉 Série Terminée !</h2>
+            <p>Tous les mots sont maîtrisés. Bravo !</p><button class="btn btn-restart"
+                onclick="resetWordQuiz()">Refaire</button>
+        </div>
+        <div id="w-core">
+            <div class="ar-word" id="w-display">بَيْت</div>
+            <div class="inp-group"><label>Phonétique du mot :</label><input type="text" id="w-inp"
+                    placeholder="ex: bayt, kitab..." autocomplete="off"></div>
+            <div class="btns">
+                <button class="btn btn-primary" id="w-submit" onclick="checkWord()">Valider</button>
+                <button class="btn btn-audio" id="w-audio" onclick="playAudio(curWord.arabic)">🔊 Écouter</button>
+                <button class="btn btn-success" id="w-next" onclick="nextWord()">Suivant ➔</button>
+            </div>
+            <div id="w-fb" class="feedback"></div>
+            <div id="w-bd"></div>
+        </div>
+    </div>
+    <!-- SECTION: TASHKEEL -->
+    <div class="section" id="sec-tashkeel">
+        <h2 class="sec-title">✏️ Voyelles & Tashkeel</h2>
+        <p class="sec-sub">Identifie le signe diacritique et prononce la syllabe</p>
+        <div class="tashkeel-ref" id="tashkeel-ref"></div>
+        <div class="prog-wrap">
+            <div class="prog-bar-bg">
+                <div class="prog-bar-fill" id="t-prog"></div>
+            </div><span class="prog-text" id="t-prog-txt">0/0</span>
+        </div>
+        <div class="victory" id="t-victory">
+            <h2>🎉 Tashkeel Maîtrisé !</h2>
+            <p>Tu connais toutes les voyelles arabes.</p><button class="btn btn-restart"
+                onclick="resetTashkeelQuiz()">Relancer</button>
+        </div>
+        <div id="t-core">
+            <div class="tashkeel-display" id="t-display">بَ</div>
+            <div class="inp-group"><label>Comment se prononce cette syllabe ?</label><input type="text" id="t-inp"
+                    placeholder="ex: ba, bi, bu..." autocomplete="off"></div>
+            <div class="btns">
+                <button class="btn btn-primary" id="t-submit" onclick="checkTashkeel()">Valider</button>
+                <button class="btn btn-audio" id="t-audio" onclick="playAudio(curTash.audio)">🔊 Écouter</button>
+                <button class="btn btn-success" id="t-next" onclick="nextTashkeel()">Suivant ➔</button>
+            </div>
+            <div id="t-fb" class="feedback"></div>
+        </div>
+    </div>
+    <!-- SECTION: SYLLABES -->
+    <div class="section" id="sec-syllables">
+        <h2 class="sec-title">🧩 Construction de Syllabes</h2>
+        <p class="sec-sub">Méthode Nour Al-Bayan — lettre + voyelle</p>
+        <select id="syl-filter" onchange="resetSylQuiz()">
+            <option value="fatha">Série Fatha (بَ تَ ثَ...)</option>
+            <option value="kasra">Série Kasra (بِ تِ ثِ...)</option>
+            <option value="damma">Série Damma (بُ تُ ثُ...)</option>
+            <option value="all">Toutes les voyelles (mélange)</option>
+        </select>
+        <div class="prog-wrap">
+            <div class="prog-bar-bg">
+                <div class="prog-bar-fill" id="s-prog"></div>
+            </div><span class="prog-text" id="s-prog-txt">0/0</span>
+        </div>
+        <div class="victory" id="s-victory">
+            <h2>🎉 Série Terminée !</h2>
+            <p>Tu maîtrises ces syllabes !</p><button class="btn btn-restart" onclick="resetSylQuiz()">Relancer</button>
+        </div>
+        <div id="s-core">
+            <div class="tashkeel-display" id="s-display">بَ</div>
+            <div class="inp-group"><label>Lis cette syllabe :</label><input type="text" id="s-inp"
+                    placeholder="ex: ba, ti, khu..." autocomplete="off"></div>
+            <div class="btns">
+                <button class="btn btn-primary" id="s-submit" onclick="checkSyl()">Valider</button>
+                <button class="btn btn-audio" id="s-audio" onclick="playAudio(curSyl.audio)">🔊 Écouter</button>
+                <button class="btn btn-success" id="s-next" onclick="nextSyl()">Suivant ➔</button>
+            </div>
+            <div id="s-fb" class="feedback"></div>
+        </div>
+    </div>
+    <!-- SECTION: DICTEE -->
+    <div class="section" id="sec-dictee">
+        <h2 class="sec-title">🎧 Dictée</h2>
+        <p class="sec-sub">Écoute et écris en arabe ce que tu entends</p>
+        <select id="dictee-mode" onchange="resetDicteeQuiz()">
+            <option value="words">Mots</option>
+            <option value="syllables">Syllabes</option>
+        </select>
+        <div class="prog-wrap">
+            <div class="prog-bar-bg">
+                <div class="prog-bar-fill" id="d-prog"></div>
+            </div><span class="prog-text" id="d-prog-txt">0/0</span>
+        </div>
+        <div class="victory" id="d-victory">
+            <h2>🎉 Dictée Terminée !</h2>
+            <p>Tu as une oreille en or !</p><button class="btn btn-restart"
+                onclick="resetDicteeQuiz()">Relancer</button>
+        </div>
+        <div id="d-core">
+            <div class="dictee-speaker" id="d-speaker" onclick="playDictee()">🔊</div>
+            <p class="dictee-hint">Clique pour réécouter</p>
+            <div class="dictee-reveal" id="d-reveal"></div>
+            <label
+                style="display:block;margin-bottom:5px;font-weight:600;font-size:14px;color:rgba(255,255,255,0.7)">Écris
+                en arabe :</label>
+            <div class="d-input-display" id="d-inp"></div>
+            <div class="vk-wrap">
+                <div class="vk-label">Lettres</div>
+                <div class="vk-row" id="vk-letters"></div>
+                <div class="vk-label" style="margin-top:8px">Tashkeel (voyelles)</div>
+                <div class="vk-row" id="vk-tashkeel"></div>
+                <div class="vk-row" style="margin-top:6px">
+                    <button class="vk-key vk-key-action" onclick="vkBackspace()">⌫ Effacer</button>
+                    <button class="vk-key vk-key-action" onclick="vkClear()">🗑 Tout</button>
+                </div>
+            </div>
+            <div class="btns">
+                <button class="btn btn-primary" id="d-submit" onclick="checkDictee()">Valider</button>
+                <button class="btn btn-success" id="d-next" onclick="nextDictee()">Suivant ➔</button>
+            </div>
+            <div id="d-fb" class="feedback"></div>
+        </div>
+    </div>
+    <!-- SECTION: ALPHABET -->
+    <div class="section" id="sec-alphabet">
+        <h2 class="sec-title">🔠 Alphabet Arabe</h2>
+        <p class="sec-sub">Clique pour écouter — les 4 formes de chaque lettre</p>
+        <div class="alpha-grid" id="alpha-grid"></div>
+    </div>
+    <!-- SECTION: STATS -->
+    <div class="section" id="sec-stats">
+        <h2 class="sec-title">📊 Statistiques</h2>
+        <p class="sec-sub">Ton tableau de bord d'apprentissage</p>
+        <div class="stat-grid" id="stat-grid"></div>
+        <h3 style="margin:18px 0 8px;font-size:16px;color:rgba(255,255,255,0.6);">🔻 Tes points faibles</h3>
+        <div id="weak-list" class="weak-list"></div>
+    </div>
+    <script>
+        // ===== UTILITIES =====
+        function norm(s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
+        function playAudio(t) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(t); u.lang = 'ar-SA'; u.rate = 0.5; window.speechSynthesis.speak(u); } }
+        let toastTimer;
+        function showToast(msg, cls = 'toast-xp') { const t = document.getElementById('toast'); t.className = 'toast ' + cls; t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2500); }
+
+        // ===== TABS =====
+        const TABS = [{ id: 'letters', icon: '📝', label: 'Lettres' }, { id: 'words', icon: '📖', label: 'Mots' }, { id: 'tashkeel', icon: '✏️', label: 'Tashkeel' }, { id: 'syllables', icon: '🧩', label: 'Syllabes' }, { id: 'dictee', icon: '🎧', label: 'Dictée' }, { id: 'alphabet', icon: '🔠', label: 'Alphabet' }, { id: 'stats', icon: '📊', label: 'Stats' }];
+        let curTab = 'letters';
+        function initTabs() { const c = document.getElementById('tabs-container'); TABS.forEach(t => { const b = document.createElement('button'); b.className = 'tab' + (t.id === 'letters' ? ' active' : ''); b.textContent = t.icon + ' ' + t.label; b.onclick = () => switchTab(t.id); b.id = 'tab-' + t.id; c.appendChild(b); }); }
+        const tabInitialized = {};
+        function switchTab(id) { curTab = id; TABS.forEach(t => { document.getElementById('sec-' + t.id).classList.toggle('visible', t.id === id); document.getElementById('tab-' + t.id).classList.toggle('active', t.id === id); }); if (id === 'stats') refreshStats(); if (!tabInitialized[id]) { tabInitialized[id] = true; if (id === 'words') resetWordQuiz(); else if (id === 'tashkeel') resetTashkeelQuiz(); else if (id === 'syllables') resetSylQuiz(); else if (id === 'dictee') resetDicteeQuiz(); } saveState(); }
+
+        // ===== GAMIFICATION =====
+        let xp = 0, level = 1, streak = 0, lastDate = '';
+        const XP_PER_LEVEL = 100;
+        function addXP(n) { xp += n; while (xp >= level * XP_PER_LEVEL) { xp -= level * XP_PER_LEVEL; level++; showToast('🎉 Niveau ' + level + ' !', 'toast-level'); } showToast('+' + n + ' XP'); updateGamiBar(); saveState(); }
+        function checkStreak() { const today = new Date().toISOString().slice(0, 10); if (lastDate !== today) { if (lastDate === new Date(Date.now() - 864e5).toISOString().slice(0, 10)) { streak++; showToast('🔥 ' + streak + ' jours !', 'toast-streak'); } else if (lastDate !== '') { streak = 1; } else { streak = 1; } lastDate = today; saveState(); updateGamiBar(); } }
+        function updateGamiBar() { document.getElementById('g-streak').textContent = streak; document.getElementById('g-level').textContent = level; document.getElementById('g-xp').textContent = xp; document.getElementById('g-xp-bar').style.width = ((xp / (level * XP_PER_LEVEL)) * 100) + '%'; }
+
+        // ===== LOCALSTORAGE =====
+        function saveState() { try { localStorage.setItem('arApp', JSON.stringify({ xp, level, streak, lastDate, curTab, lW: alphabetData.map(i => ({ w: i.weight, e: i.errors, s: i.successes, m: i.isMastered || false })), wW: wordsData.map(i => ({ w: i.weight, e: i.errors, s: i.successes, m: i.isMastered || false })), tW: tashkeelData.map(i => ({ w: i.weight, e: i.errors, s: i.successes, m: i.isMastered || false })), sW: sylData.map(i => ({ w: i.weight, e: i.errors, s: i.successes, m: i.isMastered || false })) })); } catch (e) { } }
+        function loadState() { try { const d = JSON.parse(localStorage.getItem('arApp')); if (!d) return false; xp = d.xp || 0; level = d.level || 1; streak = d.streak || 0; lastDate = d.lastDate || ''; curTab = d.curTab || 'letters'; if (d.lW) d.lW.forEach((v, i) => { if (alphabetData[i]) { alphabetData[i].weight = v.w; alphabetData[i].errors = v.e; alphabetData[i].successes = v.s; alphabetData[i].isMastered = v.m; } }); if (d.wW) d.wW.forEach((v, i) => { if (wordsData[i]) { wordsData[i].weight = v.w; wordsData[i].errors = v.e; wordsData[i].successes = v.s; wordsData[i].isMastered = v.m; } }); if (d.tW) d.tW.forEach((v, i) => { if (tashkeelData[i]) { tashkeelData[i].weight = v.w; tashkeelData[i].errors = v.e; tashkeelData[i].successes = v.s; tashkeelData[i].isMastered = v.m; } }); if (d.sW) d.sW.forEach((v, i) => { if (sylData[i]) { sylData[i].weight = v.w; sylData[i].errors = v.e; sylData[i].successes = v.s; sylData[i].isMastered = v.m; } }); return true; } catch (e) { return false; } }
+
+        // ===== SRS WEIGHTED RANDOM =====
+        function srsSelect(pool) { const active = pool.filter(i => !i.isMastered); if (!active.length) return null; const totalW = active.reduce((s, i) => s + i.weight, 0); let r = Math.random() * totalW; for (const item of active) { r -= item.weight; if (r <= 0) return item; } return active[active.length - 1]; }
+        function srsCorrect(item) { item.successes++; item.weight = Math.max(1, item.weight - 1); item.isMastered = true; }
+        function srsWrong(item) { item.errors++; item.weight = Math.min(10, item.weight + 2); }
+
+        // ===== BASE ALPHABET (for grid) =====
+        const baseAlphabet = [
+            { c: 'ا', n: 'Alif', aud: 'أَلِف', r: true, fm: ['ا', '', '', 'ـا'] }, { c: 'ب', n: 'Ba', aud: 'بَاء', r: false, fm: ['ب', 'بـ', 'ـبـ', 'ـب'] },
+            { c: 'ت', n: 'Ta', aud: 'تَاء', r: false, fm: ['ت', 'تـ', 'ـتـ', 'ـت'] }, { c: 'ث', n: 'Tha', aud: 'ثَاء', r: false, fm: ['ث', 'ثـ', 'ـثـ', 'ـث'] },
+            { c: 'ج', n: 'Jim', aud: 'جِيم', r: false, fm: ['ج', 'جـ', 'ـجـ', 'ـج'] }, { c: 'ح', n: 'Ha', aud: 'حَاء', r: false, fm: ['ح', 'حـ', 'ـحـ', 'ـح'] },
+            { c: 'خ', n: 'Kha', aud: 'خَاء', r: false, fm: ['خ', 'خـ', 'ـخـ', 'ـخ'] }, { c: 'د', n: 'Dal', aud: 'دَال', r: true, fm: ['د', '', '', 'ـد'] },
+            { c: 'ذ', n: 'Dhal', aud: 'ذَال', r: true, fm: ['ذ', '', '', 'ـذ'] }, { c: 'ر', n: 'Ra', aud: 'رَاء', r: true, fm: ['ر', '', '', 'ـر'] },
+            { c: 'ز', n: 'Zay', aud: 'زَاي', r: true, fm: ['ز', '', '', 'ـز'] }, { c: 'س', n: 'Sin', aud: 'سِين', r: false, fm: ['س', 'سـ', 'ـسـ', 'ـس'] },
+            { c: 'ش', n: 'Shin', aud: 'شِين', r: false, fm: ['ش', 'شـ', 'ـشـ', 'ـش'] }, { c: 'ص', n: 'Sad', aud: 'صَاد', r: false, fm: ['ص', 'صـ', 'ـصـ', 'ـص'] },
+            { c: 'ض', n: 'Dad', aud: 'ضَاد', r: false, fm: ['ض', 'ضـ', 'ـضـ', 'ـض'] }, { c: 'ط', n: 'Ta', aud: 'طَاء', r: false, fm: ['ط', 'طـ', 'ـطـ', 'ـط'] },
+            { c: 'ظ', n: 'Za', aud: 'ظَاء', r: false, fm: ['ظ', 'ظـ', 'ـظـ', 'ـظ'] }, { c: 'ع', n: 'Ayn', aud: 'عَيْن', r: false, fm: ['ع', 'عـ', 'ـعـ', 'ـع'] },
+            { c: 'غ', n: 'Ghayn', aud: 'غَيْن', r: false, fm: ['غ', 'غـ', 'ـغـ', 'ـغ'] }, { c: 'ف', n: 'Fa', aud: 'فَاء', r: false, fm: ['ف', 'فـ', 'ـفـ', 'ـف'] },
+            { c: 'ق', n: 'Qaf', aud: 'قَاف', r: false, fm: ['ق', 'قـ', 'ـقـ', 'ـق'] }, { c: 'ك', n: 'Kaf', aud: 'كَاف', r: false, fm: ['ك', 'كـ', 'ـكـ', 'ـك'] },
+            { c: 'ل', n: 'Lam', aud: 'لاَم', r: false, fm: ['ل', 'لـ', 'ـلـ', 'ـل'] }, { c: 'م', n: 'Mim', aud: 'مِيم', r: false, fm: ['م', 'مـ', 'ـمـ', 'ـم'] },
+            { c: 'ن', n: 'Nun', aud: 'نُون', r: false, fm: ['ن', 'نـ', 'ـنـ', 'ـن'] }, { c: 'ه', n: 'Ha', aud: 'هَاء', r: false, fm: ['ه', 'هـ', 'ـهـ', 'ـه'] },
+            { c: 'و', n: 'Waw', aud: 'وَاو', r: true, fm: ['و', '', '', 'ـو'] }, { c: 'ي', n: 'Ya', aud: 'يَاء', r: false, fm: ['ي', 'يـ', 'ـيـ', 'ـي'] }
+        ];
+
+        // Helper
+        function mkL(ch, ns, pos, aC, aW, fam, w, ph, tr) { return { char: ch, names: ns, pos: pos, audioChar: aC, audioWord: aW, family: fam, word: w, phonetic: ph, translation: tr, weight: 1, errors: 0, successes: 0, isMastered: false }; }
+
+        // ===== LETTER QUIZ DATA =====
+        const alphabetData = [
+            // Famille 1: Ba Ta Tha
+            mkL('بـ', ['ba', 'baa'], 'debut', 'بَ', 'بَيْت', 'ba_ta_tha', '<span class="highlight">بَـ</span>يْت', 'bayt', 'Maison'),
+            mkL('ـبـ', ['ba', 'baa'], 'milieu', 'بَ', 'كَبِير', 'ba_ta_tha', 'كَـ<span class="highlight">ـبِـ</span>يـر', 'kabir', 'Grand'),
+            mkL('ـب', ['ba', 'baa'], 'fin', 'بَ', 'كِتَاب', 'ba_ta_tha', 'كِتَا<span class="highlight">ـب</span>', 'kitab', 'Livre'),
+            mkL('ب', ['ba', 'baa'], 'isolee', 'بَ', 'بَاب', 'ba_ta_tha', 'بَا<span class="highlight">ب</span>', 'bab', 'Porte'),
+            mkL('تـ', ['ta', 'taa'], 'debut', 'تَ', 'تُفَّاحَة', 'ba_ta_tha', '<span class="highlight">تُـ</span>فَّاحَة', 'tuffaha', 'Pomme'),
+            mkL('ـتـ', ['ta', 'taa'], 'milieu', 'تَ', 'مَكْتَب', 'ba_ta_tha', 'مَكْـ<span class="highlight">ـتَـ</span>ب', 'maktab', 'Bureau'),
+            mkL('ـت', ['ta', 'taa'], 'fin', 'تَ', 'بَيْت', 'ba_ta_tha', 'بَيْـ<span class="highlight">ـت</span>', 'bayt', 'Maison'),
+            mkL('ثـ', ['tha', 'thaa'], 'debut', 'ثَ', 'ثَعْلَب', 'ba_ta_tha', '<span class="highlight">ثَـ</span>عْلَب', 'thalab', 'Renard'),
+            mkL('ـثـ', ['tha', 'thaa'], 'milieu', 'ثَ', 'مُثَلَّث', 'ba_ta_tha', 'مُـ<span class="highlight">ـثَـ</span>لَّث', 'muthallath', 'Triangle'),
+            mkL('ـث', ['tha', 'thaa'], 'fin', 'ثَ', 'مُثَلَّث', 'ba_ta_tha', 'مُثَلَّـ<span class="highlight">ـث</span>', 'muthallath', 'Triangle'),
+            // Famille 2: Jim Ha Kha
+            mkL('جـ', ['jim', 'jeem', 'djim'], 'debut', 'جَ', 'جَمَل', 'jim_ha_kha', '<span class="highlight">جَـ</span>مَل', 'jamal', 'Chameau'),
+            mkL('ـجـ', ['jim', 'jeem', 'djim'], 'milieu', 'جَ', 'نَجْم', 'jim_ha_kha', 'نَـ<span class="highlight">ـجْـ</span>م', 'najm', 'Étoile'),
+            mkL('ـج', ['jim', 'jeem', 'djim'], 'fin', 'جَ', 'ثَلْج', 'jim_ha_kha', 'ثَلْـ<span class="highlight">ـج</span>', 'thalj', 'Neige'),
+            mkL('حـ', ['ha', 'haa', '7a'], 'debut', 'حَ', 'حَلِيب', 'jim_ha_kha', '<span class="highlight">حَـ</span>لِيب', 'halib', 'Lait'),
+            mkL('ـحـ', ['ha', 'haa', '7a'], 'milieu', 'حَ', 'لَحْم', 'jim_ha_kha', 'لَـ<span class="highlight">ـحْـ</span>م', 'lahm', 'Viande'),
+            mkL('ـح', ['ha', 'haa', '7a'], 'fin', 'حَ', 'صَبَاح', 'jim_ha_kha', 'صَبَا<span class="highlight">ـح</span>', 'sabah', 'Matin'),
+            mkL('خـ', ['kha', 'khaa'], 'debut', 'خَ', 'خُبْز', 'jim_ha_kha', '<span class="highlight">خُـ</span>بْز', 'khubz', 'Pain'),
+            mkL('ـخـ', ['kha', 'khaa'], 'milieu', 'خَ', 'مُخْتَلِف', 'jim_ha_kha', 'مُـ<span class="highlight">ـخْـ</span>تَلِف', 'mukhtalif', 'Différent'),
+            mkL('ـخ', ['kha', 'khaa'], 'fin', 'خَ', 'مَطْبَخ', 'jim_ha_kha', 'مَطْبَـ<span class="highlight">ـخ</span>', 'matbakh', 'Cuisine'),
+            // Famille 3: Dal Dhal Ra Zay (rebelles)
+            mkL('د', ['dal', 'daal'], 'isolee', 'دَ', 'دِيك', 'dal_dhal_ra_zay', '<span class="highlight">دِ</span>يك', 'dik', 'Coq'),
+            mkL('ـد', ['dal', 'daal'], 'fin', 'دَ', 'وَلَد', 'dal_dhal_ra_zay', 'وَلَـ<span class="highlight">ـد</span>', 'walad', 'Garçon'),
+            mkL('ذ', ['dhal', 'dhaal'], 'isolee', 'ذَ', 'ذَهَب', 'dal_dhal_ra_zay', '<span class="highlight">ذَ</span>هَب', 'dhahab', 'Or'),
+            mkL('ـذ', ['dhal', 'dhaal'], 'fin', 'ذَ', 'تِلْمِيذ', 'dal_dhal_ra_zay', 'تِلْمِيـ<span class="highlight">ـذ</span>', 'tilmidh', 'Élève'),
+            mkL('ر', ['ra', 'raa'], 'isolee', 'رَ', 'رَجُل', 'dal_dhal_ra_zay', '<span class="highlight">رَ</span>جُل', 'rajul', 'Homme'),
+            mkL('ـر', ['ra', 'raa'], 'fin', 'رَ', 'نَمِر', 'dal_dhal_ra_zay', 'نَمِـ<span class="highlight">ـر</span>', 'namir', 'Tigre'),
+            mkL('ز', ['zay', 'zaay'], 'isolee', 'زَ', 'زَهْرَة', 'dal_dhal_ra_zay', '<span class="highlight">زَ</span>هْرَة', 'zahra', 'Fleur'),
+            mkL('ـز', ['zay', 'zaay'], 'fin', 'زَ', 'خُبْز', 'dal_dhal_ra_zay', 'خُبْـ<span class="highlight">ـز</span>', 'khubz', 'Pain'),
+            // Famille 4: Sin Shin
+            mkL('سـ', ['sin', 'seen'], 'debut', 'سَ', 'سَمَكَة', 'sin_shin', '<span class="highlight">سَـ</span>مَكَة', 'samaka', 'Poisson'),
+            mkL('ـسـ', ['sin', 'seen'], 'milieu', 'سَ', 'مَسْجِد', 'sin_shin', 'مَـ<span class="highlight">ـسْـ</span>جِد', 'masjid', 'Mosquée'),
+            mkL('ـس', ['sin', 'seen'], 'fin', 'سَ', 'شَمْس', 'sin_shin', 'شَمْـ<span class="highlight">ـس</span>', 'shams', 'Soleil'),
+            mkL('شـ', ['shin', 'sheen', 'chin'], 'debut', 'شَ', 'شَمْس', 'sin_shin', '<span class="highlight">شَـ</span>مْس', 'shams', 'Soleil'),
+            mkL('ـشـ', ['shin', 'sheen', 'chin'], 'milieu', 'شَ', 'مَشْرُوب', 'sin_shin', 'مَـ<span class="highlight">ـشْـ</span>رُوب', 'mashroub', 'Boisson'),
+            mkL('ـش', ['shin', 'sheen', 'chin'], 'fin', 'شَ', 'عَطَش', 'sin_shin', 'عَطَـ<span class="highlight">ـش</span>', 'atash', 'Soif'),
+            // Famille 5: Sad Dad
+            mkL('صـ', ['sad', 'saad'], 'debut', 'صَ', 'صَبَاح', 'sad_dad', '<span class="highlight">صَـ</span>بَاح', 'sabah', 'Matin'),
+            mkL('ـصـ', ['sad', 'saad'], 'milieu', 'صَ', 'حِصَان', 'sad_dad', 'حِـ<span class="highlight">ـصَـ</span>ان', 'hisan', 'Cheval'),
+            mkL('ضـ', ['dad', 'daad'], 'debut', 'ضَ', 'ضَوْء', 'sad_dad', '<span class="highlight">ضَـ</span>وْء', 'daw', 'Lumière'),
+            mkL('ـضـ', ['dad', 'daad'], 'milieu', 'ضَ', 'مِضْرَب', 'sad_dad', 'مِـ<span class="highlight">ـضْـ</span>رَب', 'midrab', 'Raquette'),
+            // Famille 6: Ta Za (emphatiques)
+            mkL('طـ', ['ta', 'taa'], 'debut', 'طَ', 'طَاوِلَة', 'ta_za', '<span class="highlight">طَـ</span>اوِلَة', 'tawila', 'Table'),
+            mkL('ـطـ', ['ta', 'taa'], 'milieu', 'طَ', 'مَطْبَخ', 'ta_za', 'مَـ<span class="highlight">ـطْـ</span>بَخ', 'matbakh', 'Cuisine'),
+            mkL('ظـ', ['za', 'zaa'], 'debut', 'ظَ', 'ظَهْر', 'ta_za', '<span class="highlight">ظَـ</span>هْر', 'zahr', 'Dos'),
+            mkL('ـظـ', ['za', 'zaa'], 'milieu', 'ظَ', 'نَظَر', 'ta_za', 'نَـ<span class="highlight">ـظَـ</span>ر', 'nazar', 'Vue'),
+            // Famille 7: Ayn Ghayn
+            mkL('عـ', ['ayn', 'ain', '3ayn'], 'debut', 'عَ', 'عَيْن', 'ayn_ghayn', '<span class="highlight">عَـ</span>يْن', 'ayn', 'Oeil'),
+            mkL('ـعـ', ['ayn', 'ain', '3ayn'], 'milieu', 'عَ', 'مَعْنَى', 'ayn_ghayn', 'مَـ<span class="highlight">ـعْـ</span>نَى', 'maana', 'Sens'),
+            mkL('ـع', ['ayn', 'ain', '3ayn'], 'fin', 'عَ', 'شُجَاع', 'ayn_ghayn', 'شُجَا<span class="highlight">ـع</span>', 'shuja', 'Courageux'),
+            mkL('غـ', ['ghayn', 'ghain'], 'debut', 'غَ', 'غُرْفَة', 'ayn_ghayn', '<span class="highlight">غُـ</span>رْفَة', 'ghurfa', 'Chambre'),
+            mkL('ـغـ', ['ghayn', 'ghain'], 'milieu', 'غَ', 'صَغِير', 'ayn_ghayn', 'صَـ<span class="highlight">ـغِـ</span>ـيـر', 'saghir', 'Petit'),
+            // Famille 8: Fa Qaf
+            mkL('فـ', ['fa', 'faa'], 'debut', 'فَ', 'فَم', 'fa_qaf', '<span class="highlight">فَـ</span>م', 'fam', 'Bouche'),
+            mkL('ـفـ', ['fa', 'faa'], 'milieu', 'فَ', 'مِفْتَاح', 'fa_qaf', 'مِـ<span class="highlight">ـفْـ</span>تَاح', 'miftah', 'Clé'),
+            mkL('قـ', ['qaf', 'qaaf'], 'debut', 'قَ', 'قَلَم', 'fa_qaf', '<span class="highlight">قَـ</span>لَم', 'qalam', 'Stylo'),
+            mkL('ـقـ', ['qaf', 'qaaf'], 'milieu', 'قَ', 'بَقَرَة', 'fa_qaf', 'بَـ<span class="highlight">ـقَـ</span>رَة', 'baqara', 'Vache'),
+            // Famille 9: Kaf Lam Mim Nun
+            mkL('كـ', ['kaf', 'kaaf'], 'debut', 'كَ', 'كِتَاب', 'kaf_lam_mim_nun', '<span class="highlight">كِـ</span>تَاب', 'kitab', 'Livre'),
+            mkL('ـكـ', ['kaf', 'kaaf'], 'milieu', 'كَ', 'مَكْتَب', 'kaf_lam_mim_nun', 'مَـ<span class="highlight">ـكْـ</span>تَب', 'maktab', 'Bureau'),
+            mkL('لـ', ['lam', 'laam'], 'debut', 'لَ', 'لَحْم', 'kaf_lam_mim_nun', '<span class="highlight">لَـ</span>حْم', 'lahm', 'Viande'),
+            mkL('ـلـ', ['lam', 'laam'], 'milieu', 'لَ', 'قَلَم', 'kaf_lam_mim_nun', 'قَـ<span class="highlight">ـلَـ</span>م', 'qalam', 'Stylo'),
+            mkL('مـ', ['mim', 'meem'], 'debut', 'مَ', 'مَاء', 'kaf_lam_mim_nun', '<span class="highlight">مَـ</span>اء', 'ma', 'Eau'),
+            mkL('ـمـ', ['mim', 'meem'], 'milieu', 'مَ', 'شَمْس', 'kaf_lam_mim_nun', 'شَـ<span class="highlight">ـمْـ</span>س', 'shams', 'Soleil'),
+            mkL('ـم', ['mim', 'meem'], 'fin', 'مَ', 'قَلَم', 'kaf_lam_mim_nun', 'قَلَـ<span class="highlight">ـم</span>', 'qalam', 'Stylo'),
+            mkL('نـ', ['nun', 'noon'], 'debut', 'نَ', 'نَار', 'kaf_lam_mim_nun', '<span class="highlight">نَـ</span>ار', 'nar', 'Feu'),
+            mkL('ـنـ', ['nun', 'noon'], 'milieu', 'نَ', 'بِنْت', 'kaf_lam_mim_nun', 'بِـ<span class="highlight">ـنْـ</span>ت', 'bint', 'Fille'),
+            mkL('ـن', ['nun', 'noon'], 'fin', 'نَ', 'عَيْن', 'kaf_lam_mim_nun', 'عَيْـ<span class="highlight">ـن</span>', 'ayn', 'Oeil'),
+            // Famille 10: Ha Waw Ya
+            mkL('هـ', ['ha', 'haa'], 'debut', 'هَ', 'هَوَاء', 'ha_waw_ya', '<span class="highlight">هَـ</span>وَاء', 'hawa', 'Air'),
+            mkL('ـهـ', ['ha', 'haa'], 'milieu', 'هَ', 'نَهْر', 'ha_waw_ya', 'نَـ<span class="highlight">ـهْـ</span>ر', 'nahr', 'Rivière'),
+            mkL('ـه', ['ha', 'haa'], 'fin', 'هَ', 'وَجْه', 'ha_waw_ya', 'وَجْـ<span class="highlight">ـه</span>', 'wajh', 'Visage'),
+            mkL('و', ['waw', 'waaw'], 'isolee', 'وَ', 'وَلَد', 'ha_waw_ya', '<span class="highlight">وَ</span>لَد', 'walad', 'Garçon'),
+            mkL('ـو', ['waw', 'waaw'], 'fin', 'وَ', 'ضَوْء', 'ha_waw_ya', 'ضَوْ<span class="highlight">ـو</span>', 'daw', 'Lumière'),
+            mkL('يـ', ['ya', 'yaa'], 'debut', 'يَ', 'يَد', 'ha_waw_ya', '<span class="highlight">يَـ</span>د', 'yad', 'Main'),
+            mkL('ـيـ', ['ya', 'yaa'], 'milieu', 'يَ', 'بَيْت', 'ha_waw_ya', 'بَـ<span class="highlight">ـيْـ</span>ت', 'bayt', 'Maison'),
+            mkL('ـي', ['ya', 'yaa'], 'fin', 'يَ', 'كُرْسِيّ', 'ha_waw_ya', 'كُرْسِـ<span class="highlight">ـيّ</span>', 'kursi', 'Chaise')
+        ];
+
+        // Family filter options
+        const FAMILIES = [{ v: 'all', l: 'Toutes les lettres (Mélange)' }, { v: 'ba_ta_tha', l: 'Famille 1 : Ba, Ta, Tha (ب ت ث)' }, { v: 'jim_ha_kha', l: 'Famille 2 : Jim, Ha, Kha (ج ح خ)' }, { v: 'dal_dhal_ra_zay', l: 'Famille 3 : Dal, Dhal, Ra, Zay (د ذ ر ز)' }, { v: 'sin_shin', l: 'Famille 4 : Sin, Shin (س ش)' }, { v: 'sad_dad', l: 'Famille 5 : Sad, Dad (ص ض)' }, { v: 'ta_za', l: 'Famille 6 : Ta, Za (ط ظ)' }, { v: 'ayn_ghayn', l: 'Famille 7 : Ayn, Ghayn (ع غ)' }, { v: 'fa_qaf', l: 'Famille 8 : Fa, Qaf (ف ق)' }, { v: 'kaf_lam_mim_nun', l: 'Famille 9 : Kaf, Lam, Mim, Nun (ك ل م ن)' }, { v: 'ha_waw_ya', l: 'Famille 10 : Ha, Waw, Ya (هـ و ي)' }];
+        function initFamilyFilter() { const s = document.getElementById('family-filter'); FAMILIES.forEach(f => { const o = document.createElement('option'); o.value = f.v; o.textContent = f.l; s.appendChild(o); }); }
+
+        // Helper for words
+        function mkW(ar, ph, tr, bd) { return { arabic: ar, acceptedPhonetics: ph, translation: tr, breakdown: bd, weight: 1, errors: 0, successes: 0, isMastered: false }; }
+        function mkB(c, n, p) { return { char: c, name: n, pos: p }; }
+
+        // ===== WORDS DATA =====
+        const wordsData = [
+            mkW('بَيْت', ['bayt', 'bait'], 'Maison', [mkB('بَـ', 'Ba', 'Début'), mkB('ـيْـ', 'Ya', 'Milieu'), mkB('ـت', 'Ta', 'Fin')]),
+            mkW('بَاب', ['bab', 'baab'], 'Porte', [mkB('بَـ', 'Ba', 'Début'), mkB('ا', 'Alif', 'Rebelle'), mkB('ب', 'Ba', 'Isolée')]),
+            mkW('كِتَاب', ['kitab'], 'Livre', [mkB('كِـ', 'Kaf', 'Début'), mkB('ـتَـ', 'Ta', 'Milieu'), mkB('ا', 'Alif', 'Rebelle'), mkB('ب', 'Ba', 'Isolée')]),
+            mkW('قَلَم', ['qalam', 'kalam'], 'Stylo', [mkB('قَـ', 'Qaf', 'Début'), mkB('ـلَـ', 'Lam', 'Milieu'), mkB('ـم', 'Mim', 'Fin')]),
+            mkW('مَكْتَب', ['maktab'], 'Bureau', [mkB('مَـ', 'Mim', 'Début'), mkB('ـكْـ', 'Kaf', 'Milieu'), mkB('ـتَـ', 'Ta', 'Milieu'), mkB('ـب', 'Ba', 'Fin')]),
+            mkW('أَب', ['ab'], 'Père', [mkB('أَ', 'Alif', 'Rebelle'), mkB('ب', 'Ba', 'Isolée')]),
+            mkW('أُمّ', ['um', 'oum', 'umm'], 'Mère', [mkB('أُ', 'Alif', 'Rebelle'), mkB('مّ', 'Mim', 'Isolée')]),
+            mkW('أَخ', ['akh'], 'Frère', [mkB('أَ', 'Alif', 'Rebelle'), mkB('خ', 'Kha', 'Isolée')]),
+            mkW('وَلَد', ['walad'], 'Garçon', [mkB('وَ', 'Waw', 'Rebelle'), mkB('لَـ', 'Lam', 'Début'), mkB('ـد', 'Dal', 'Fin')]),
+            mkW('بِنْت', ['bint'], 'Fille', [mkB('بِـ', 'Ba', 'Début'), mkB('ـنْـ', 'Nun', 'Milieu'), mkB('ـت', 'Ta', 'Fin')]),
+            mkW('كَلْب', ['kalb'], 'Chien', [mkB('كَـ', 'Kaf', 'Début'), mkB('ـلْـ', 'Lam', 'Milieu'), mkB('ـب', 'Ba', 'Fin')]),
+            mkW('جَمَل', ['jamal', 'djamal'], 'Chameau', [mkB('جَـ', 'Jim', 'Début'), mkB('ـمَـ', 'Mim', 'Milieu'), mkB('ـل', 'Lam', 'Fin')]),
+            mkW('نَمِر', ['namir'], 'Tigre', [mkB('نَـ', 'Nun', 'Début'), mkB('ـمِـ', 'Mim', 'Milieu'), mkB('ـر', 'Ra', 'Fin')]),
+            mkW('سَمَكَة', ['samaka'], 'Poisson', [mkB('سَـ', 'Sin', 'Début'), mkB('ـمَـ', 'Mim', 'Milieu'), mkB('ـكَـ', 'Kaf', 'Milieu'), mkB('ـة', 'Ta marb.', 'Fin')]),
+            mkW('بَقَرَة', ['baqara', 'bakara'], 'Vache', [mkB('بَـ', 'Ba', 'Début'), mkB('ـقَـ', 'Qaf', 'Milieu'), mkB('ـرَ', 'Ra', 'Fin'), mkB('ة', 'Ta marb.', 'Isolée')]),
+            mkW('حِصَان', ['hisan', '7isan'], 'Cheval', [mkB('حِـ', 'Ha', 'Début'), mkB('ـصَـ', 'Sad', 'Milieu'), mkB('ا', 'Alif', 'Rebelle'), mkB('ن', 'Nun', 'Isolée')]),
+            mkW('مَاء', ['ma', 'maa'], 'Eau', [mkB('مَـ', 'Mim', 'Début'), mkB('ا', 'Alif', 'Rebelle'), mkB('ء', 'Hamza', 'Isolée')]),
+            mkW('نَار', ['nar', 'naar'], 'Feu', [mkB('نَـ', 'Nun', 'Début'), mkB('ا', 'Alif', 'Rebelle'), mkB('ر', 'Ra', 'Isolée')]),
+            mkW('شَمْس', ['shams', 'chams'], 'Soleil', [mkB('شَـ', 'Shin', 'Début'), mkB('ـمْـ', 'Mim', 'Milieu'), mkB('ـس', 'Sin', 'Fin')]),
+            mkW('قَمَر', ['qamar', 'kamar'], 'Lune', [mkB('قَـ', 'Qaf', 'Début'), mkB('ـمَـ', 'Mim', 'Milieu'), mkB('ـر', 'Ra', 'Fin')]),
+            mkW('جَبَل', ['jabal', 'djabal'], 'Montagne', [mkB('جَـ', 'Jim', 'Début'), mkB('ـبَـ', 'Ba', 'Milieu'), mkB('ـل', 'Lam', 'Fin')]),
+            mkW('خُبْز', ['khubz', 'khoubz'], 'Pain', [mkB('خُـ', 'Kha', 'Début'), mkB('ـبْـ', 'Ba', 'Milieu'), mkB('ز', 'Zay', 'Fin')]),
+            mkW('حَلِيب', ['halib', 'haleeb', '7alib'], 'Lait', [mkB('حَـ', 'Ha', 'Début'), mkB('ـلِـ', 'Lam', 'Milieu'), mkB('ـيـ', 'Ya', 'Milieu'), mkB('ـب', 'Ba', 'Fin')]),
+            mkW('عَيْن', ['ayn', 'ain', '3ayn'], 'Oeil', [mkB('عَـ', 'Ayn', 'Début'), mkB('ـيْـ', 'Ya', 'Milieu'), mkB('ـن', 'Nun', 'Fin')]),
+            mkW('فَم', ['fam'], 'Bouche', [mkB('فَـ', 'Fa', 'Début'), mkB('ـم', 'Mim', 'Fin')]),
+            mkW('يَد', ['yad'], 'Main', [mkB('يَـ', 'Ya', 'Début'), mkB('د', 'Dal', 'Fin')]),
+            mkW('كُرْسِيّ', ['kursi', 'koursi'], 'Chaise', [mkB('كُـ', 'Kaf', 'Début'), mkB('ـرْ', 'Ra', 'Fin'), mkB('سِـ', 'Sin', 'Début'), mkB('ـيّ', 'Ya', 'Fin')]),
+            mkW('سَيَّارَة', ['sayara', 'sayyara'], 'Voiture', [mkB('سَـ', 'Sin', 'Début'), mkB('ـيَّـ', 'Ya', 'Milieu'), mkB('ا', 'Alif', 'Rebelle'), mkB('رَ', 'Ra', 'Rebelle'), mkB('ة', 'Ta marb.', 'Isolée')]),
+            mkW('كَبِير', ['kabir', 'kabeer'], 'Grand', [mkB('كَـ', 'Kaf', 'Début'), mkB('ـبِـ', 'Ba', 'Milieu'), mkB('ـيـ', 'Ya', 'Milieu'), mkB('ـر', 'Ra', 'Fin')]),
+            mkW('صَغِير', ['saghir', 'sagheer'], 'Petit', [mkB('صَـ', 'Sad', 'Début'), mkB('ـغِـ', 'Ghayn', 'Milieu'), mkB('ـيـ', 'Ya', 'Milieu'), mkB('ـر', 'Ra', 'Fin')]),
+            // Nouveaux mots
+            mkW('سَلَام', ['salam', 'salaam'], 'Paix', [mkB('سَـ', 'Sin', 'Début'), mkB('ـلَـ', 'Lam', 'Milieu'), mkB('ا', 'Alif', 'Rebelle'), mkB('م', 'Mim', 'Isolée')]),
+            mkW('صَبَاح', ['sabah', 'sabaa7'], 'Matin', [mkB('صَـ', 'Sad', 'Début'), mkB('ـبَـ', 'Ba', 'Milieu'), mkB('ا', 'Alif', 'Rebelle'), mkB('ح', 'Ha', 'Isolée')]),
+            mkW('مَسَاء', ['masa', 'masaa'], 'Soir', [mkB('مَـ', 'Mim', 'Début'), mkB('ـسَـ', 'Sin', 'Milieu'), mkB('ا', 'Alif', 'Rebelle'), mkB('ء', 'Hamza', 'Isolée')]),
+            mkW('مَدْرَسَة', ['madrasa'], 'École', [mkB('مَـ', 'Mim', 'Début'), mkB('ـدْ', 'Dal', 'Fin'), mkB('رَ', 'Ra', 'Rebelle'), mkB('سَـ', 'Sin', 'Début'), mkB('ـة', 'Ta marb.', 'Fin')]),
+            mkW('مَسْجِد', ['masjid'], 'Mosquée', [mkB('مَـ', 'Mim', 'Début'), mkB('ـسْـ', 'Sin', 'Milieu'), mkB('ـجِـ', 'Jim', 'Milieu'), mkB('ـد', 'Dal', 'Fin')]),
+            mkW('نَجْم', ['najm'], 'Étoile', [mkB('نَـ', 'Nun', 'Début'), mkB('ـجْـ', 'Jim', 'Milieu'), mkB('ـم', 'Mim', 'Fin')]),
+            mkW('بَحْر', ['bahr'], 'Mer', [mkB('بَـ', 'Ba', 'Début'), mkB('ـحْـ', 'Ha', 'Milieu'), mkB('ـر', 'Ra', 'Fin')]),
+            mkW('غُرْفَة', ['ghurfa'], 'Chambre', [mkB('غُـ', 'Ghayn', 'Début'), mkB('ـرْ', 'Ra', 'Fin'), mkB('فَـ', 'Fa', 'Début'), mkB('ـة', 'Ta marb.', 'Fin')]),
+            mkW('قَهْوَة', ['qahwa', 'kahwa'], 'Café', [mkB('قَـ', 'Qaf', 'Début'), mkB('ـهْـ', 'Ha', 'Milieu'), mkB('وَ', 'Waw', 'Rebelle'), mkB('ة', 'Ta marb.', 'Isolée')]),
+            mkW('شَاي', ['shay', 'chai'], 'Thé', [mkB('شَـ', 'Shin', 'Début'), mkB('ا', 'Alif', 'Rebelle'), mkB('ي', 'Ya', 'Isolée')]),
+            mkW('ذَهَب', ['dhahab'], 'Or', [mkB('ذَ', 'Dhal', 'Rebelle'), mkB('هَـ', 'Ha', 'Début'), mkB('ـب', 'Ba', 'Fin')]),
+            mkW('أَحْمَر', ['ahmar'], 'Rouge', [mkB('أَ', 'Alif', 'Rebelle'), mkB('حْـ', 'Ha', 'Début'), mkB('ـمَـ', 'Mim', 'Milieu'), mkB('ـر', 'Ra', 'Fin')]),
+            mkW('أَبْيَض', ['abyad'], 'Blanc', [mkB('أَ', 'Alif', 'Rebelle'), mkB('بْـ', 'Ba', 'Début'), mkB('ـيَـ', 'Ya', 'Milieu'), mkB('ـض', 'Dad', 'Fin')]),
+            mkW('أَسْوَد', ['aswad'], 'Noir', [mkB('أَ', 'Alif', 'Rebelle'), mkB('سْـ', 'Sin', 'Début'), mkB('ـوَ', 'Waw', 'Fin'), mkB('د', 'Dal', 'Isolée')]),
+            mkW('أَخْضَر', ['akhdar'], 'Vert', [mkB('أَ', 'Alif', 'Rebelle'), mkB('خْـ', 'Kha', 'Début'), mkB('ـضَـ', 'Dad', 'Milieu'), mkB('ـر', 'Ra', 'Fin')]),
+            mkW('طَرِيق', ['tariq', 'tareek'], 'Chemin', [mkB('طَـ', 'Ta', 'Début'), mkB('ـرِ', 'Ra', 'Fin'), mkB('يـ', 'Ya', 'Début'), mkB('ـق', 'Qaf', 'Fin')]),
+            mkW('زَهْرَة', ['zahra'], 'Fleur', [mkB('زَ', 'Zay', 'Rebelle'), mkB('هْـ', 'Ha', 'Début'), mkB('ـرَ', 'Ra', 'Fin'), mkB('ة', 'Ta marb.', 'Isolée')]),
+            mkW('لَحْم', ['lahm'], 'Viande', [mkB('لَـ', 'Lam', 'Début'), mkB('ـحْـ', 'Ha', 'Milieu'), mkB('ـم', 'Mim', 'Fin')]),
+            mkW('وَجْه', ['wajh'], 'Visage', [mkB('وَ', 'Waw', 'Rebelle'), mkB('جْـ', 'Jim', 'Début'), mkB('ـه', 'Ha', 'Fin')]),
+            mkW('دِيك', ['dik'], 'Coq', [mkB('دِ', 'Dal', 'Rebelle'), mkB('يـ', 'Ya', 'Début'), mkB('ـك', 'Kaf', 'Fin')])
+        ];
+
+        // ===== TASHKEEL DATA (generated) =====
+        const vowelDefs = [{ s: '\u064E', n: 'Fatha', snd: 'a', ar: 'فَتْحَة' }, { s: '\u0650', n: 'Kasra', snd: 'i', ar: 'كَسْرَة' }, { s: '\u064F', n: 'Damma', snd: 'u', ar: 'ضَمَّة' }, { s: '\u0652', n: 'Sukun', snd: '', ar: 'سُكُون' }, { s: '\u0651', n: 'Shadda', snd: '(double)', ar: 'شَدَّة' }];
+        const ltSnd = { ب: 'b', ت: 't', ث: 'th', ج: 'j', ح: 'h', خ: 'kh', د: 'd', ذ: 'dh', ر: 'r', ز: 'z', س: 's', ش: 'sh', ص: 's', ض: 'd', ط: 't', ظ: 'z', ع: '3', غ: 'gh', ف: 'f', ق: 'q', ك: 'k', ل: 'l', م: 'm', ن: 'n', ه: 'h', و: 'w', ي: 'y' };
+        const ltNm = { ب: 'Ba', ت: 'Ta', ث: 'Tha', ج: 'Jim', ح: 'Ha', خ: 'Kha', د: 'Dal', ذ: 'Dhal', ر: 'Ra', ز: 'Zay', س: 'Sin', ش: 'Shin', ص: 'Sad', ض: 'Dad', ط: 'Ta', ظ: 'Za', ع: 'Ayn', غ: 'Ghayn', ف: 'Fa', ق: 'Qaf', ك: 'Kaf', ل: 'Lam', م: 'Mim', ن: 'Nun', ه: 'Ha', و: 'Waw', ي: 'Ya' };
+        const tashkeelLetters = 'بتثجحخدذرزسشصضطظعغفقكلمنهوي'.split('');
+        let tashkeelData = [];
+        function genTashkeel() { tashkeelData = []; const mainV = vowelDefs.slice(0, 3); tashkeelLetters.forEach(lt => { mainV.forEach(v => { const snd = ltSnd[lt] + v.snd; const alts = [snd]; if (lt === 'ج') alts.push('dj' + v.snd); if (lt === 'ش') alts.push('ch' + v.snd); if (lt === 'ع') alts.push('a' + v.snd, 'ai' + v.snd); tashkeelData.push({ display: lt + v.s, audio: lt + v.s, accepted: alts, vowelName: v.n, letterName: ltNm[lt], weight: 1, errors: 0, successes: 0, isMastered: false }); }); }); }
+
+        // ===== SYLLABLE DATA (Nour Al-Bayan method) =====
+        let sylData = [];
+        function genSyllables() { sylData = []; const vMap = { fatha: { s: '\u064E', snd: 'a' }, kasra: { s: '\u0650', snd: 'i' }, damma: { s: '\u064F', snd: 'u' } }; Object.keys(vMap).forEach(vk => { const v = vMap[vk]; tashkeelLetters.forEach(lt => { const snd = ltSnd[lt] + v.snd; const alts = [snd]; if (lt === 'ج') alts.push('dj' + v.snd); if (lt === 'ش') alts.push('ch' + v.snd); if (lt === 'ع') alts.push('a' + v.snd); sylData.push({ display: lt + v.s, audio: lt + v.s, accepted: alts, vowelType: vk, letterName: ltNm[lt], weight: 1, errors: 0, successes: 0, isMastered: false }); }); }); }
+
+        // ===== STATS tracking =====
+        let stats = { lettersCorrect: 0, lettersWrong: 0, wordsCorrect: 0, wordsWrong: 0, tashkeelCorrect: 0, tashkeelWrong: 0, sylCorrect: 0, sylWrong: 0 };
+
+        // ===== LETTER QUIZ =====
+        let curLetter = {};
+        function resetLetterQuiz() {
+            document.getElementById('l-victory').style.display = 'none';
+            document.getElementById('l-core').style.display = 'block';
+            const f = document.getElementById('family-filter').value;
+            const pool = (f !== 'all') ? alphabetData.filter(i => i.family === f) : alphabetData;
+            pool.forEach(i => { i.isMastered = false; i.weight = 1; });
+            nextLetter();
+        }
+        function updateLetterProg() {
+            const f = document.getElementById('family-filter').value;
+            const pool = (f !== 'all') ? alphabetData.filter(i => i.family === f) : alphabetData;
+            const done = pool.filter(i => i.isMastered).length;
+            document.getElementById('l-prog').style.width = ((done / pool.length) * 100) + '%';
+            document.getElementById('l-prog-txt').textContent = done + '/' + pool.length;
+        }
+        function nextLetter() {
+            const f = document.getElementById('family-filter').value;
+            const pool = (f !== 'all') ? alphabetData.filter(i => i.family === f) : alphabetData;
+            const item = srsSelect(pool);
+            if (!item) { document.getElementById('l-core').style.display = 'none'; document.getElementById('l-victory').style.display = 'block'; return; }
+            curLetter = item;
+            document.getElementById('l-char').textContent = curLetter.char;
+            document.getElementById('l-word').style.display = 'none';
+            document.getElementById('l-inp-name').value = ''; document.getElementById('l-inp-pos').value = '';
+            document.getElementById('l-fb').innerHTML = ''; document.getElementById('l-tip').style.display = 'none';
+            document.getElementById('l-submit').style.display = 'inline-block';
+            document.getElementById('l-next').style.display = 'none'; document.getElementById('l-audio1').style.display = 'none'; document.getElementById('l-audio2').style.display = 'none';
+            document.getElementById('l-inp-name').focus();
+            updateLetterProg();
+        }
+        function checkLetter() {
+            const uN = norm(document.getElementById('l-inp-name').value);
+            const uP = norm(document.getElementById('l-inp-pos').value);
+            const nameOk = curLetter.names.some(n => norm(n) === uN);
+            const posOk = (uP === curLetter.pos || (curLetter.pos === 'isolee' && (uP === 'isole' || uP === 'isolee')) || (curLetter.pos === 'debut' && uP === 'commencement'));
+            if (nameOk && posOk) { srsCorrect(curLetter); stats.lettersCorrect++; addXP(10); checkStreak(); document.getElementById('l-fb').innerHTML = '<span class="correct">Excellent ! Validé ✔️</span>'; }
+            else { srsWrong(curLetter); stats.lettersWrong++; document.getElementById('l-fb').innerHTML = '<span class="incorrect">Elle reste dans la pile !</span><br>C\'était : <b>' + curLetter.names[0].toUpperCase() + '</b> en position <b>' + curLetter.pos + '</b>'; }
+            const wd = document.getElementById('l-word');
+            wd.innerHTML = curLetter.word + '<br><span style="font-size:20px;color:#a29bfe;font-weight:bold;">[ ' + curLetter.phonetic + ' ]</span><br><span style="font-size:16px;color:rgba(255,255,255,0.5);">' + curLetter.translation + '</span>';
+            wd.style.display = 'block';
+            playAudio(curLetter.audioChar);
+            document.getElementById('l-submit').style.display = 'none';
+            document.getElementById('l-audio1').style.display = 'inline-block'; document.getElementById('l-audio2').style.display = 'inline-block'; document.getElementById('l-next').style.display = 'inline-block';
+            updateLetterProg(); saveState();
+        }
+
+        // ===== WORD QUIZ =====
+        let curWord = {};
+        function getWordPool() {
+            const d = document.getElementById('word-diff').value;
+            if (d === 'short') return wordsData.filter(w => w.breakdown.length <= 3);
+            if (d === 'medium') return wordsData.filter(w => w.breakdown.length === 4);
+            if (d === 'long') return wordsData.filter(w => w.breakdown.length >= 5);
+            return wordsData;
+        }
+        function resetWordQuiz() {
+            document.getElementById('w-victory').style.display = 'none';
+            document.getElementById('w-core').style.display = 'block';
+            getWordPool().forEach(i => { i.isMastered = false; i.weight = 1; });
+            nextWord();
+        }
+        function updateWordProg() {
+            const pool = getWordPool(); const done = pool.filter(i => i.isMastered).length;
+            document.getElementById('w-prog').style.width = ((done / pool.length) * 100) + '%';
+            document.getElementById('w-prog-txt').textContent = done + '/' + pool.length;
+        }
+        function nextWord() {
+            const pool = getWordPool(); const item = srsSelect(pool);
+            if (!item) { document.getElementById('w-core').style.display = 'none'; document.getElementById('w-victory').style.display = 'block'; return; }
+            curWord = item;
+            document.getElementById('w-display').textContent = curWord.arabic;
+            document.getElementById('w-inp').value = ''; document.getElementById('w-fb').innerHTML = ''; document.getElementById('w-bd').innerHTML = '';
+            document.getElementById('w-submit').style.display = 'inline-block'; document.getElementById('w-next').style.display = 'none'; document.getElementById('w-audio').style.display = 'none';
+            document.getElementById('w-inp').focus(); updateWordProg();
+        }
+        function checkWord() {
+            const u = norm(document.getElementById('w-inp').value);
+            const ok = curWord.acceptedPhonetics.some(p => norm(p) === u);
+            if (ok) {
+                srsCorrect(curWord); stats.wordsCorrect++; addXP(15); checkStreak();
+                document.getElementById('w-fb').innerHTML = '<span class="correct">Bravo ! ✔️</span><br><span style="color:rgba(255,255,255,0.5);">' + curWord.translation + '</span>';
+            } else {
+                srsWrong(curWord); stats.wordsWrong++;
+                document.getElementById('w-fb').innerHTML = '<span class="incorrect">Le mot retourne dans la pile !</span><br>C\'était : <b>[ ' + curWord.acceptedPhonetics[0] + ' ]</b><br><span style="color:rgba(255,255,255,0.5);">' + curWord.translation + '</span>';
+            }
+            // Breakdown
+            const colors = ['#e74c3c', '#6c5ce7', '#00b894', '#fdcb6e', '#fd79a8', '#e17055'];
+            let h = '<div class="bd-wrap">';
+            curWord.breakdown.forEach((b, i) => {
+                const c = colors[i % colors.length];
+                h += '<div class="bd-item" style="border-bottom-color:' + c + '"><div class="bd-char" style="color:' + c + '">' + b.char + '</div><div class="bd-desc"><b>' + b.name + '</b><br>(' + b.pos + ')</div></div>';
+                if (i < curWord.breakdown.length - 1) h += '<div class="bd-plus">+</div>';
+            }); h += '</div>';
+            document.getElementById('w-bd').innerHTML = h;
+            playAudio(curWord.arabic);
+            document.getElementById('w-submit').style.display = 'none'; document.getElementById('w-audio').style.display = 'inline-block'; document.getElementById('w-next').style.display = 'inline-block';
+            updateWordProg(); saveState();
+        }
+
+        // ===== TASHKEEL QUIZ =====
+        let curTash = {};
+        function resetTashkeelQuiz() {
+            document.getElementById('t-victory').style.display = 'none';
+            document.getElementById('t-core').style.display = 'block';
+            tashkeelData.forEach(i => { i.isMastered = false; i.weight = 1; });
+            nextTashkeel();
+        }
+        function updateTashkeelProg() {
+            const done = tashkeelData.filter(i => i.isMastered).length;
+            document.getElementById('t-prog').style.width = ((done / tashkeelData.length) * 100) + '%';
+            document.getElementById('t-prog-txt').textContent = done + '/' + tashkeelData.length;
+        }
+        function nextTashkeel() {
+            const item = srsSelect(tashkeelData);
+            if (!item) { document.getElementById('t-core').style.display = 'none'; document.getElementById('t-victory').style.display = 'block'; return; }
+            curTash = item;
+            document.getElementById('t-display').textContent = curTash.display;
+            document.getElementById('t-inp').value = ''; document.getElementById('t-fb').innerHTML = '';
+            document.getElementById('t-submit').style.display = 'inline-block'; document.getElementById('t-next').style.display = 'none'; document.getElementById('t-audio').style.display = 'none';
+            document.getElementById('t-inp').focus(); updateTashkeelProg();
+        }
+        function checkTashkeel() {
+            const u = norm(document.getElementById('t-inp').value);
+            const ok = curTash.accepted.some(a => norm(a) === u);
+            if (ok) {
+                srsCorrect(curTash); stats.tashkeelCorrect++; addXP(8); checkStreak();
+                document.getElementById('t-fb').innerHTML = '<span class="correct">Correct ! ✔️</span><br><span style="color:rgba(255,255,255,0.5);">' + curTash.letterName + ' + ' + curTash.vowelName + ' = ' + curTash.accepted[0] + '</span>';
+            } else {
+                srsWrong(curTash); stats.tashkeelWrong++;
+                document.getElementById('t-fb').innerHTML = '<span class="incorrect">Non... c\'était <b>' + curTash.accepted[0] + '</b></span><br><span style="color:rgba(255,255,255,0.5);">' + curTash.letterName + ' + ' + curTash.vowelName + '</span>';
+            }
+            playAudio(curTash.audio);
+            document.getElementById('t-submit').style.display = 'none'; document.getElementById('t-audio').style.display = 'inline-block'; document.getElementById('t-next').style.display = 'inline-block';
+            updateTashkeelProg(); saveState();
+        }
+
+        // ===== SYLLABLE QUIZ =====
+        let curSyl = {};
+        function resetSylQuiz() {
+            document.getElementById('s-victory').style.display = 'none';
+            document.getElementById('s-core').style.display = 'block';
+            const f = document.getElementById('syl-filter').value;
+            const pool = (f !== 'all') ? sylData.filter(i => i.vowelType === f) : sylData;
+            pool.forEach(i => { i.isMastered = false; i.weight = 1; });
+            nextSyl();
+        }
+        function updateSylProg() {
+            const f = document.getElementById('syl-filter').value;
+            const pool = (f !== 'all') ? sylData.filter(i => i.vowelType === f) : sylData;
+            const done = pool.filter(i => i.isMastered).length;
+            document.getElementById('s-prog').style.width = ((done / pool.length) * 100) + '%';
+            document.getElementById('s-prog-txt').textContent = done + '/' + pool.length;
+        }
+        function nextSyl() {
+            const f = document.getElementById('syl-filter').value;
+            const pool = (f !== 'all') ? sylData.filter(i => i.vowelType === f) : sylData;
+            const item = srsSelect(pool);
+            if (!item) { document.getElementById('s-core').style.display = 'none'; document.getElementById('s-victory').style.display = 'block'; return; }
+            curSyl = item;
+            document.getElementById('s-display').textContent = curSyl.display;
+            document.getElementById('s-inp').value = ''; document.getElementById('s-fb').innerHTML = '';
+            document.getElementById('s-submit').style.display = 'inline-block'; document.getElementById('s-next').style.display = 'none'; document.getElementById('s-audio').style.display = 'none';
+            document.getElementById('s-inp').focus(); updateSylProg();
+        }
+        function checkSyl() {
+            const u = norm(document.getElementById('s-inp').value);
+            const ok = curSyl.accepted.some(a => norm(a) === u);
+            if (ok) {
+                srsCorrect(curSyl); stats.sylCorrect++; addXP(8); checkStreak();
+                document.getElementById('s-fb').innerHTML = '<span class="correct">Bravo ! ✔️</span><br><span style="color:rgba(255,255,255,0.5);">' + curSyl.letterName + ' = ' + curSyl.accepted[0] + '</span>';
+            } else {
+                srsWrong(curSyl); stats.sylWrong++;
+                document.getElementById('s-fb').innerHTML = '<span class="incorrect">C\'était <b>' + curSyl.accepted[0] + '</b></span><br><span style="color:rgba(255,255,255,0.5);">' + curSyl.letterName + '</span>';
+            }
+            playAudio(curSyl.audio);
+            document.getElementById('s-submit').style.display = 'none'; document.getElementById('s-audio').style.display = 'inline-block'; document.getElementById('s-next').style.display = 'inline-block';
+            updateSylProg(); saveState();
+        }
+
+        // ===== VIRTUAL KEYBOARD =====
+        const vkLettersList = 'ابتثجحخدذرزسشصضطظعغفقكلمنهويءة'.split('');
+        const vkTashkeelList = [
+            { char: '\u064E', label: 'ب\u064E', name: 'Fatha' },
+            { char: '\u064F', label: 'ب\u064F', name: 'Damma' },
+            { char: '\u0650', label: 'ب\u0650', name: 'Kasra' },
+            { char: '\u0652', label: 'ب\u0652', name: 'Sukun' },
+            { char: '\u0651', label: 'ب\u0651', name: 'Shadda' },
+            { char: '\u064B', label: 'ب\u064B', name: 'Fathatan' },
+            { char: '\u064C', label: 'ب\u064C', name: 'Dammatan' },
+            { char: '\u064D', label: 'ب\u064D', name: 'Kasratan' }
+        ];
+        function initVirtualKeyboard() {
+            const lr = document.getElementById('vk-letters');
+            vkLettersList.forEach(ch => {
+                const btn = document.createElement('button');
+                btn.className = 'vk-key';
+                btn.textContent = ch;
+                btn.onclick = () => vkType(ch);
+                lr.appendChild(btn);
+            });
+            const tr = document.getElementById('vk-tashkeel');
+            vkTashkeelList.forEach(t => {
+                const btn = document.createElement('button');
+                btn.className = 'vk-key vk-key-tashkeel';
+                btn.textContent = t.label;
+                btn.title = t.name;
+                btn.onclick = () => vkType(t.char);
+                tr.appendChild(btn);
+            });
+        }
+        function vkType(ch) {
+            const inp = document.getElementById('d-inp');
+            inp.textContent += ch;
+        }
+        function vkBackspace() {
+            const inp = document.getElementById('d-inp');
+            const txt = inp.textContent;
+            if (txt.length > 0) inp.textContent = txt.slice(0, -1);
+        }
+        function vkClear() {
+            document.getElementById('d-inp').textContent = '';
+        }
+
+        // ===== DICTEE QUIZ =====
+        let curDictee = {}, dicteePool = [];
+        function normAr(s) { return s.replace(/\s/g, '').replace(/\u0670/g, '').trim(); }
+        function getDicteePool() {
+            const mode = document.getElementById('dictee-mode').value;
+            if (mode === 'syllables') return sylData.map(s => ({ audio: s.audio, arabic: s.display, label: s.display, type: 'syllabe' }));
+            return wordsData.map(w => ({ audio: w.arabic, arabic: w.arabic, label: w.arabic, translation: w.translation, type: 'mot' }));
+        }
+        function resetDicteeQuiz() {
+            document.getElementById('d-victory').style.display = 'none';
+            document.getElementById('d-core').style.display = 'block';
+            dicteePool = getDicteePool();
+            dicteePool.forEach(i => { i.dMastered = false; i.dWeight = i.dWeight || 1; });
+            nextDictee();
+        }
+        function updateDicteeProg() {
+            const done = dicteePool.filter(i => i.dMastered).length;
+            document.getElementById('d-prog').style.width = ((done / dicteePool.length) * 100) + '%';
+            document.getElementById('d-prog-txt').textContent = done + '/' + dicteePool.length;
+        }
+        function nextDictee() {
+            const active = dicteePool.filter(i => !i.dMastered);
+            if (!active.length) { document.getElementById('d-core').style.display = 'none'; document.getElementById('d-victory').style.display = 'block'; return; }
+            const totalW = active.reduce((s, i) => s + (i.dWeight || 1), 0);
+            let r = Math.random() * totalW;
+            curDictee = active[active.length - 1];
+            for (const item of active) { r -= (item.dWeight || 1); if (r <= 0) { curDictee = item; break; } }
+            document.getElementById('d-inp').textContent = ''; document.getElementById('d-fb').innerHTML = '';
+            document.getElementById('d-reveal').style.display = 'none';
+            document.getElementById('d-submit').style.display = 'inline-block'; document.getElementById('d-next').style.display = 'none';
+            updateDicteeProg();
+            setTimeout(() => playDictee(), 400);
+        }
+        function playDictee() { playAudio(curDictee.audio); }
+        function checkDictee() {
+            const userText = normAr(document.getElementById('d-inp').textContent);
+            const expected = normAr(curDictee.arabic);
+            const ok = userText === expected;
+            const reveal = document.getElementById('d-reveal');
+            reveal.textContent = curDictee.label;
+            reveal.style.display = 'block';
+            if (ok) {
+                curDictee.dMastered = true; curDictee.dWeight = Math.max(1, (curDictee.dWeight || 1) - 1);
+                addXP(15); checkStreak();
+                let extra = curDictee.translation ? '<br><span style="color:rgba(255,255,255,0.5);">' + curDictee.translation + '</span>' : '';
+                document.getElementById('d-fb').innerHTML = '<span class="correct">Bravo ! \u2714\ufe0f</span>' + extra;
+            } else {
+                curDictee.dWeight = Math.min(10, (curDictee.dWeight || 1) + 2);
+                document.getElementById('d-fb').innerHTML = '<span class="incorrect">C\'\u00e9tait <b style="font-family:Amiri,serif;font-size:24px;">' + curDictee.arabic + '</b></span>';
+            }
+            playAudio(curDictee.audio);
+            document.getElementById('d-submit').style.display = 'none'; document.getElementById('d-next').style.display = 'inline-block';
+            updateDicteeProg(); saveState();
+        }
+
+        // ===== ALPHABET GRID =====
+        function initAlphabetGrid() {
+            const g = document.getElementById('alpha-grid');
+            baseAlphabet.forEach(l => {
+                const card = document.createElement('div');
+                card.className = 'alpha-card' + (l.r ? ' rebel' : '');
+                card.onclick = () => playAudio(l.aud);
+                const formsStr = l.fm.filter(f => f !== '').join(' ');
+                card.innerHTML = '<div class="ch">' + l.c + '</div><div class="nm">' + l.n + '</div><div class="forms">' + formsStr + '</div>' + (l.r ? '<span class="rebel-tag">Rebelle</span>' : '');
+                g.appendChild(card);
+            });
+        }
+
+        // ===== TASHKEEL REFERENCE CARDS =====
+        function initTashkeelRef() {
+            const r = document.getElementById('tashkeel-ref');
+            const examples = [
+                { ar: 'بَ', nm: 'Fatha', snd: 'a', desc: 'Ouvre la bouche' },
+                { ar: 'بِ', nm: 'Kasra', snd: 'i', desc: 'Souris !' },
+                { ar: 'بُ', nm: 'Damma', snd: 'u', desc: 'Arrondis les lèvres' },
+                { ar: 'بْ', nm: 'Sukun', snd: '—', desc: 'Pas de voyelle' },
+                { ar: 'بّ', nm: 'Shadda', snd: 'bb', desc: 'Double la lettre' }
+            ];
+            examples.forEach(e => {
+                const card = document.createElement('div'); card.className = 'tashkeel-card';
+                card.innerHTML = '<div class="tc-ar">' + e.ar + '</div><div class="tc-nm">' + e.nm + '</div><div class="tc-snd">' + e.snd + '</div>';
+                card.onclick = () => playAudio(e.ar); card.style.cursor = 'pointer';
+                r.appendChild(card);
+            });
+        }
+
+        // ===== STATS DASHBOARD =====
+        function refreshStats() {
+            const grid = document.getElementById('stat-grid');
+            const totalCorrect = stats.lettersCorrect + stats.wordsCorrect + stats.tashkeelCorrect + stats.sylCorrect;
+            const totalWrong = stats.lettersWrong + stats.wordsWrong + stats.tashkeelWrong + stats.sylWrong;
+            const rate = totalCorrect + totalWrong > 0 ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0;
+            const lMastered = alphabetData.filter(i => i.isMastered).length;
+            const wMastered = wordsData.filter(i => i.isMastered).length;
+            const tMastered = tashkeelData.filter(i => i.isMastered).length;
+            const sMastered = sylData.filter(i => i.isMastered).length;
+            grid.innerHTML = `
+        <div class="stat-card"><div class="st-val" style="color:#6c5ce7">⭐ ${level}</div><div class="st-lbl">Niveau</div></div>
+        <div class="stat-card"><div class="st-val" style="color:#fdcb6e">🔥 ${streak}</div><div class="st-lbl">Streak (jours)</div></div>
+        <div class="stat-card"><div class="st-val" style="color:#00b894">${rate}%</div><div class="st-lbl">Taux de réussite</div></div>
+        <div class="stat-card"><div class="st-val" style="color:#a29bfe">${totalCorrect}</div><div class="st-lbl">Bonnes réponses</div></div>
+        <div class="stat-card"><div class="st-val" style="color:#00cec9">${lMastered}/${alphabetData.length}</div><div class="st-lbl">Lettres validées</div></div>
+        <div class="stat-card"><div class="st-val" style="color:#fd79a8">${wMastered}/${wordsData.length}</div><div class="st-lbl">Mots validés</div></div>
+        <div class="stat-card"><div class="st-val" style="color:#e17055">${tMastered}/${tashkeelData.length}</div><div class="st-lbl">Tashkeel validé</div></div>
+        <div class="stat-card"><div class="st-val" style="color:#6c5ce7">${sMastered}/${sylData.length}</div><div class="st-lbl">Syllabes validées</div></div>`;
+            // Weak items
+            const allItems = [...alphabetData.map(i => ({ label: i.char, errors: i.errors, type: 'Lettre' })), ...wordsData.map(i => ({ label: i.arabic, errors: i.errors, type: 'Mot' })), ...tashkeelData.map(i => ({ label: i.display, errors: i.errors, type: 'Tashkeel' }))];
+            const weak = allItems.filter(i => i.errors > 0).sort((a, b) => b.errors - a.errors).slice(0, 6);
+            const wl = document.getElementById('weak-list');
+            if (weak.length === 0) { wl.innerHTML = '<p style="color:rgba(255,255,255,0.3);text-align:center;">Aucune erreur pour le moment 🎉</p>'; return; }
+            wl.innerHTML = weak.map(w => '<div class="weak-item"><span class="ar">' + w.label + '</span><span class="wi-info">' + w.type + ' — ' + w.errors + ' erreur(s)</span></div>').join('');
+        }
+
+        // ===== KEYBOARD =====
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                if (curTab === 'letters' && document.getElementById('l-core').style.display !== 'none') {
+                    if (document.getElementById('l-submit').style.display !== 'none') checkLetter(); else nextLetter();
+                } else if (curTab === 'words' && document.getElementById('w-core').style.display !== 'none') {
+                    if (document.getElementById('w-submit').style.display !== 'none') checkWord(); else nextWord();
+                } else if (curTab === 'tashkeel' && document.getElementById('t-core').style.display !== 'none') {
+                    if (document.getElementById('t-submit').style.display !== 'none') checkTashkeel(); else nextTashkeel();
+                } else if (curTab === 'syllables' && document.getElementById('s-core').style.display !== 'none') {
+                    if (document.getElementById('s-submit').style.display !== 'none') checkSyl(); else nextSyl();
+                } else if (curTab === 'dictee' && document.getElementById('d-core').style.display !== 'none') {
+                    if (document.getElementById('d-submit').style.display !== 'none') checkDictee(); else nextDictee();
+                }
+            }
+        });
+
+        // ===== INIT =====
+        window.onload = function () {
+            genTashkeel(); genSyllables();
+            const hadState = loadState();
+            initTabs(); initFamilyFilter(); initAlphabetGrid(); initTashkeelRef(); initVirtualKeyboard();
+            tabInitialized.letters = true;
+            if (hadState) { switchTab(curTab); updateGamiBar(); }
+            resetLetterQuiz();
+            checkStreak(); updateGamiBar();
+        };
+    </script>
+</body>
+
+</html>
