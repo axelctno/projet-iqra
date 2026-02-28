@@ -2,9 +2,8 @@
 <html lang="fr">
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Apprendre l'Arabe — Application Complète</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -15,6 +14,15 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button,
+        a,
+        select,
+        .dictee-speaker,
+        .alpha-card {
+            touch-action: manipulation;
         }
 
         body {
@@ -302,7 +310,8 @@
             padding: 12px;
             border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 16px;
+            /* 16px to prevent iOS auto-zoom */
             background: rgba(255, 255, 255, 0.06);
             color: #e8e8f0;
             outline: none;
@@ -669,6 +678,16 @@
                 font-size: 65px;
             }
 
+            .inp-group input {
+                font-size: 16px;
+                /* Empêche le zoom auto sur iOS */
+            }
+
+            .btn {
+                padding: 14px 20px;
+                /* Plus facile à cliquer */
+            }
+
             .ar-word {
                 font-size: 50px;
             }
@@ -1006,6 +1025,7 @@
                 <div class="vk-label" style="margin-top:8px">Tashkeel (voyelles)</div>
                 <div class="vk-row" id="vk-tashkeel"></div>
                 <div class="vk-row" style="margin-top:6px">
+                    <button class="vk-key vk-key-action" id="mic-btn" onclick="vkMic()">🎤 Voix</button>
                     <button class="vk-key vk-key-action" onclick="vkBackspace()">⌫ Effacer</button>
                     <button class="vk-key vk-key-action" onclick="vkClear()">🗑 Tout</button>
                 </div>
@@ -1034,7 +1054,28 @@
     <script>
         // ===== UTILITIES =====
         function norm(s) { return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
-        function playAudio(t) { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(t); u.lang = 'ar-SA'; u.rate = 0.5; window.speechSynthesis.speak(u); } }
+
+        // Optimisation Mobile : Primer le TTS pour iOS/Android
+        let ttsPrimed = false;
+        function primeTTS() {
+            if (!ttsPrimed && 'speechSynthesis' in window) {
+                const u = new SpeechSynthesisUtterance('');
+                u.volume = 0; window.speechSynthesis.speak(u);
+                ttsPrimed = true;
+            }
+        }
+        document.addEventListener('touchstart', primeTTS, { once: true });
+        document.addEventListener('click', primeTTS, { once: true });
+
+        function playAudio(t) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Fix bug file d'attente iOS Safari
+                const u = new SpeechSynthesisUtterance(t);
+                u.lang = 'ar-SA';
+                u.rate = 0.5;
+                window.speechSynthesis.speak(u);
+            }
+        }
         let toastTimer;
         function showToast(msg, cls = 'toast-xp') { const t = document.getElementById('toast'); t.className = 'toast ' + cls; t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2500); }
 
@@ -1467,9 +1508,57 @@
             document.getElementById('d-inp').textContent = '';
         }
 
+        // ===== MICROPHONE (Speech to Text) =====
+        let recognition = null;
+        let isRecording = false;
+        function vkMic() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                showToast("Microphone non supporté sur ce navigateur.", "toast-streak");
+                return;
+            }
+            if (isRecording) {
+                if (recognition) recognition.stop();
+                return;
+            }
+            try {
+                const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRec();
+                recognition.lang = 'ar-SA'; // Réglé sur Arabe Saoudien
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onstart = function () {
+                    isRecording = true;
+                    document.getElementById('mic-btn').style.background = '#e17055';
+                    document.getElementById('mic-btn').style.color = '#fff';
+                    showToast("🎙️ Écoute...");
+                };
+                recognition.onresult = function (event) {
+                    let transcript = event.results[0][0].transcript;
+                    // On peut retirer les espaces pour que ça matche sans problème
+                    transcript = transcript.replace(/[\s\.]/g, '');
+                    vkType(transcript);
+                };
+                recognition.onerror = function (event) {
+                    showToast("Erreur micro : " + event.error, "toast-streak");
+                };
+                recognition.onend = function () {
+                    isRecording = false;
+                    document.getElementById('mic-btn').style.background = '';
+                    document.getElementById('mic-btn').style.color = '';
+                };
+                recognition.start();
+            } catch (e) {
+                showToast("Erreur d'initialisation du micro");
+            }
+        }
+
         // ===== DICTEE QUIZ =====
         let curDictee = {}, dicteePool = [];
-        function normAr(s) { return s.replace(/\s/g, '').replace(/\u0670/g, '').trim(); }
+        function normAr(s) {
+            // On retire les espaces, alif dagger, et tous les tashkeel (voyelles) pour comparer facilement la dictée vocale
+            return s.replace(/\s/g, '').replace(/[\u064B-\u065F\u0670]/g, '').trim();
+        }
         function getDicteePool() {
             const mode = document.getElementById('dictee-mode').value;
             if (mode === 'syllables') return sylData.map(s => ({ audio: s.audio, arabic: s.display, label: s.display, type: 'syllabe' }));
