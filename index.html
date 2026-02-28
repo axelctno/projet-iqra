@@ -1069,12 +1069,27 @@
         document.addEventListener('click', primeTTS, { once: true });
 
         function playAudio(t) {
-            if ('speechSynthesis' in window) {
-                // Remove cancel as it breaks older iOS Safari TTS queues entirely if called frequently
-                const u = new SpeechSynthesisUtterance(t);
-                u.lang = 'ar-SA';
-                u.rate = 0.5;
-                window.speechSynthesis.speak(u);
+            try {
+                // Utilisation de l'API TTS de Google Translate (très fiable sur mobile via élément Audio standard)
+                const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=ar&q=${encodeURIComponent(t)}`;
+                const audio = new Audio(url);
+                // On force la vitesse à 0.8 pour un apprentissage plus facile
+                audio.playbackRate = 0.8;
+                audio.play().catch(e => {
+                    // Si le réseau échoue, on tente la synthèse vocale locale
+                    if ('speechSynthesis' in window) {
+                        const u = new SpeechSynthesisUtterance(t);
+                        u.lang = 'ar-SA';
+                        u.rate = 0.5;
+                        window.speechSynthesis.speak(u);
+                    }
+                });
+            } catch (e) {
+                if ('speechSynthesis' in window) {
+                    const u = new SpeechSynthesisUtterance(t);
+                    u.lang = 'ar-SA';
+                    window.speechSynthesis.speak(u);
+                }
             }
         }
         let toastTimer;
