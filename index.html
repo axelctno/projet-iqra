@@ -1000,6 +1000,7 @@
         <select id="dictee-mode" onchange="resetDicteeQuiz()">
             <option value="words">Mots</option>
             <option value="syllables">Syllabes</option>
+            <option value="letters">Alphabet (Lettres isolées)</option>
         </select>
         <div class="prog-wrap">
             <div class="prog-bar-bg">
@@ -1069,7 +1070,7 @@
 
         function playAudio(t) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // Fix bug file d'attente iOS Safari
+                // Remove cancel as it breaks older iOS Safari TTS queues entirely if called frequently
                 const u = new SpeechSynthesisUtterance(t);
                 u.lang = 'ar-SA';
                 u.rate = 0.5;
@@ -1562,6 +1563,7 @@
         function getDicteePool() {
             const mode = document.getElementById('dictee-mode').value;
             if (mode === 'syllables') return sylData.map(s => ({ audio: s.audio, arabic: s.display, label: s.display, type: 'syllabe' }));
+            if (mode === 'letters') return alphabetData.filter(l => l.pos === 'isolee' || l.pos === 'debut').map(l => ({ audio: l.audioChar, arabic: l.char.replace(/ـ/g, ''), label: l.char.replace(/ـ/g, ''), translation: l.names[0], type: 'lettre' }));
             return wordsData.map(w => ({ audio: w.arabic, arabic: w.arabic, label: w.arabic, translation: w.translation, type: 'mot' }));
         }
         function resetDicteeQuiz() {
